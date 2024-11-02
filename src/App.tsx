@@ -3,11 +3,10 @@ import AirportRunway from './page/AirportRunway'
 import AirportRunway2 from './page/AR'
 
 function App() {
-
   return (
-      <>
-      <AirportRunway/>
-      </>
+    <>
+      <AirportRunway />
+    </>
   )
 }
 

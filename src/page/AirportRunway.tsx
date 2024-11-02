@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaPlane } from 'react-icons/fa'
 import { IoWarning } from 'react-icons/io5'
-
+import { Alert, Button, Popconfirm, Space } from 'antd';
+import { BsQuestionCircle } from 'react-icons/bs';
 interface Plane {
   id: string
   x: string
@@ -18,7 +19,7 @@ const AirportRunway: React.FC = () => {
   ])
 
   const [alert, setAlert] = useState<string>('')
-
+  const [open, setOpen] = useState(false)
   const validatePosition = (x: string, y: string): boolean => {
     const numX = parseFloat(x)
     const numY = parseFloat(y)
@@ -59,38 +60,117 @@ const AirportRunway: React.FC = () => {
       }
     }
     setAlert('')
-  } 
-  function isOnRunWay (x: number, y: number) {
+  }
+
+  function isRepair(x: any, y: any) {
+    return x >= 42 && x <= 53 && y >= 0 && y <= 11
+  }
+
+  function isOnE4(x: any, y: any) {
+    return x >= 30 && x <= 42 && y >= 78 && y <= 85
+  }
+
+  function isOnRunWay(x: number, y: number) {
     return x > 41 && x < 54 && y > -1 && y < 88
   }
-  function isOverThreshold (x: any, y: any ) {
+
+  function isOverThreshold(x: any, y: any) {
     return x > 41 && x < 54 && y >= 88
   }
-  function isOverHoldShortLine (x: number, y: number) {
-    if( x >= 37 ) setAlert('')
-  }
-  function checkAirPlane () {
-    // Tạo một thông báo khác dành cho B, C
-    // Xử lý ghi đè alert của B và C
-    if(isOnRunWay(parseInt(planes[0].x), parseInt(planes[0].y))) {
-      console.log('Thông báo cho máy bay B Máy bay A đang trong đường bay');
-      console.log('Thông báo cho máy bay C Máy bay A đang trong đường bay');
-      setAlert('Máy bay B: Runway Occupied! Máy bay C: Runway Occupied!')
 
-    } else if(isOverThreshold(planes[0].x, planes[0].y)) {
-    // Máy bay A overthreshold
-      console.log('Máy bay C: Runway Occupied!');
-      setAlert('Máy bay C: Runway Occupied!')
+  function isOverHoldShortLine(x: any, y: any) {
+    if (x >= 37) {
+      if (isRepair(planes[1].x, planes[1].y)) {
+        setAlert(
+          'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION Máy bay B: RWY Incursion'
+        )
+        if (x > 38 && x < 43) {
+          setAlert(
+            'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION Máy bay B: RWY Incursion '
+          )
+        } else {
+          setAlert(
+            'Máy bay B: CONFLICT CONFLICT CONFLICTGO AROUND GO AROUND Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION'
+          )
+        }
+      } else {
+        if (!isOnE4(planes[1].x, planes[1].y)) {
+          if (planes[1].y > y) {
+            setAlert(
+              'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION Máy bay B: INCURSION INCURSION INCURSION'
+            )
+          } else {
+            if (x > 38 && x < 43) {
+              setAlert(
+                'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION Máy bay B: INCURSION INCURSION INCURSION'
+              )
+            } else {
+              setAlert(' Máy bay A: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
+            }
+          }
+        }
+        // STOP ALERT
+      }
+    } else {
+      setAlert('Máy bay C: RUNWAY OCCUPIED')
+      if (!isOnE4(planes[1].x, planes[1].y)) {
+        setAlert('Máy bay C: RUNWAY OCCUPIED')
+      }
+      // STOP ALERT
+    }
+  }
+
+  function checkAirPlane() {
+    if (isOnRunWay(parseInt(planes[0].x), parseInt(planes[0].y))) {
+      setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
     }
 
-
-    
+    if (planes[0].x && planes[0].y && isOverThreshold(planes[0].x, planes[0].y)) {
+      console.log(planes[0].x, planes[0].y, isOverThreshold(planes[0].x, planes[0].y));
+      // Máy bay A overthreshold
+      setAlert('Máy bay C: RUNWAY OCCUPIED!')
+      isOverHoldShortLine(parseInt(planes[2].x), parseInt(planes[2].y))
+    } else {
+      planes[0].x && planes[0].y && setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
+      planes[0].x && planes[0].y && setOpen(true)
+    }
   }
+  const handleConfirm = () => {
+    setOpen(false)
+    setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
+  }
+
+  const handleCancel = () => {
+    setOpen(false)
+    if(parseInt(planes[2].x) >= 37) {
+      if (parseInt(planes[2].x) < parseInt(planes[0].x)) {
+        setAlert("Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION")
+      } else {
+        if (38 < parseInt(planes[2].x) && parseInt(planes[2].x) < 40) {
+          setAlert("Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION")
+        } else {
+          setAlert('Máy bay A: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
+        }
+      }
+    } else {
+      setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
+    }
+  }
+
   useEffect(() => {
     checkAirPlane()
   }, [planes])
   return (
     <div className=' bg-gray-100 p-8'>
+      <Popconfirm
+        open={open}
+        title="CONFIRM TAKEOFF ABORTED ?"
+        description="Are you sure to confirm?"
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        icon={<BsQuestionCircle style={{ color: 'red', marginTop: 3, marginRight: 2 }} />}
+      >
+      </Popconfirm>
       <div className='max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6'>
         <h1 className='text-3xl font-bold text-center mb-8 text-gray-800'>Airport Runway Control</h1>
         <AnimatePresence>
@@ -165,6 +245,7 @@ const AirportRunway: React.FC = () => {
                         }}
                         className='absolute'
                       >
+                        <span style={{color: 'white', transform: 'rotate(-90deg)', display: 'inline-block'}}>{plane.id}</span>
                         <FaPlane className='text-white text-2xl' aria-label={`Airplane ${plane.id}`} />
                       </motion.div>
                     )
@@ -173,8 +254,6 @@ const AirportRunway: React.FC = () => {
             </div>
           </div>
         </div>
-
-        
       </div>
     </div>
   )
@@ -186,7 +265,6 @@ interface RunwayProps {
   width?: number
   height?: number
 }
-
 
 const AirportRunway3: React.FC<RunwayProps> = () => {
   return (
@@ -252,14 +330,7 @@ const AirportRunway3: React.FC<RunwayProps> = () => {
             <text x={taxiway.x + 20} y={100} fill='white' fontSize={20} className='select-none pointer-events-none'>
               {taxiway.id}
             </text>
-            <line
-              x1={taxiway.x}
-              y1={110} 
-              x2={taxiway.x + 60} 
-              y2={110} 
-              stroke='yellow'
-              strokeWidth='2' 
-            />
+            <line x1={taxiway.x} y1={110} x2={taxiway.x + 60} y2={110} stroke='yellow' strokeWidth='2' />
           </g>
         ))}
       </svg>

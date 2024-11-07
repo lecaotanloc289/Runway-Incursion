@@ -52,8 +52,7 @@ const AirportRunway: React.FC = () => {
     for (let i = 0; i < validPlanes.length; i++) {
       for (let j = i + 1; j < validPlanes.length; j++) {
         const distance = Math.sqrt(
-          Math.pow(parseFloat(validPlanes[i].x) - parseFloat(validPlanes[j].x), 2) +
-            Math.pow(parseFloat(validPlanes[i].y) - parseFloat(validPlanes[j].y), 2)
+          Math.pow(validPlanes[i].x - validPlanes[j].x, 2) + Math.pow(validPlanes[i].y - validPlanes[j].y, 2)
         )
 
         if (distance < 10) {

@@ -1,27 +1,29 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaPlane } from 'react-icons/fa'
 import { IoWarning } from 'react-icons/io5'
-import { Alert, Button, Popconfirm, Space } from 'antd';
-import { BsQuestionCircle } from 'react-icons/bs';
+import { Alert, Button, Popconfirm, Space } from 'antd'
+import { BsQuestionCircle } from 'react-icons/bs'
 interface Plane {
   id: string
-  x: string
-  y: string
+  x: number
+  y: number
   isValid: boolean
 }
 
 const AirportRunway: React.FC = () => {
   const [planes, setPlanes] = useState<Plane[]>([
-    { id: 'A', x: '', y: '', isValid: false },
-    { id: 'B', x: '', y: '', isValid: false },
-    { id: 'C', x: '', y: '', isValid: false }
+    { id: 'A', x: 0, y: 0, isValid: false },
+    { id: 'B', x: 0, y: 0, isValid: false },
+    { id: 'C', x: 0, y: 0, isValid: false }
   ])
 
   const [alert, setAlert] = useState<string>('')
   const [open, setOpen] = useState(false)
-  const validatePosition = (x: string, y: string): boolean => {
+
+  const validatePosition = (x: number, y: number): boolean => {
     const numX = parseFloat(x)
     const numY = parseFloat(y)
     return !isNaN(numX) && !isNaN(numY) && numX >= 0 && numX <= 100 && numY >= 0 && numY <= 100
@@ -63,29 +65,34 @@ const AirportRunway: React.FC = () => {
     setAlert('')
   }
 
-  function isRepair(x: any, y: any) {
-    return x >= 42 && x <= 53 && y >= 0 && y <= 11
+  function isRepair(x: number, y: number) {
+    if (x >= 42 && x <= 53) {
+      return y >= 0 && y <= 11
+    }
   }
 
-  function isOnE4(x: any, y: any) {
-    return x >= 30 && x <= 42 && y >= 78 && y <= 85
+  function isOnE4(x: number, y: number) {
+    return x >= 0 && x <= 36 && y >= 78 && y <= 85
   }
 
+  // 1
   function isOnRunWay(x: number, y: number) {
-    return x > 41 && x < 54 && y > -1 && y < 88
+    if (x > 41 && x < 54) {
+      return y > -1 && y < 88
+    } else return false
   }
 
-  function isOverThreshold(x: any, y: any) {
+  function isOverThreshold(x: number, y: number) {
     return x > 41 && x < 54 && y >= 88
   }
 
-  function isOverHoldShortLine(x: any, y: any) {
+  function isOverHoldShortLine(x: number, y: number) {
     if (x >= 37) {
       if (isRepair(planes[1].x, planes[1].y)) {
         setAlert(
           'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION Máy bay B: RWY Incursion'
         )
-        if (x > 38 && x < 43) {
+        if (x < 43) {
           setAlert(
             'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION Máy bay B: RWY Incursion '
           )
@@ -101,77 +108,70 @@ const AirportRunway: React.FC = () => {
               'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION Máy bay B: INCURSION INCURSION INCURSION'
             )
           } else {
-            if (x > 38 && x < 43) {
+            if (x < 43) {
               setAlert(
                 'Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION Máy bay B: INCURSION INCURSION INCURSION'
               )
             } else {
-              setAlert(' Máy bay A: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
+              setAlert(' Máy bay B: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
             }
           }
-        }
+        } else setAlert('')
+
         // STOP ALERT
       }
     } else {
       setAlert('Máy bay C: RUNWAY OCCUPIED')
       if (!isOnE4(planes[1].x, planes[1].y)) {
         setAlert('Máy bay C: RUNWAY OCCUPIED')
+      } else {
+        // STOP ALERT
+        setAlert('')
       }
-      // STOP ALERT
     }
   }
 
   function checkAirPlane() {
-    if (isOnRunWay(parseInt(planes[0].x), parseInt(planes[0].y))) {
+    // 1 | Kiểm tra A có trong đường băng hay không
+    if (isOnRunWay(planes[0].x, planes[0].y)) {
       setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
     }
 
+    // 2 | Kiểm tra A có đang bay ra khỏi đường bay hay không
     if (planes[0].x && planes[0].y && isOverThreshold(planes[0].x, planes[0].y)) {
-      console.log(planes[0].x, planes[0].y, isOverThreshold(planes[0].x, planes[0].y));
-      // Máy bay A overthreshold
+      // ĐÚNG | Máy bay A overthreshold
       setAlert('Máy bay C: RUNWAY OCCUPIED!')
-      isOverHoldShortLine(parseInt(planes[2].x), parseInt(planes[2].y))
+      isOverHoldShortLine(planes[2].x, planes[2].y)
     } else {
-      planes[0].x && planes[0].y && setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
-      planes[0].x && planes[0].y && setOpen(true)
-    }
-  }
-  const handleConfirm = () => {
-    setOpen(false)
-    setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
-  }
-
-  const handleCancel = () => {
-    setOpen(false)
-    if(parseInt(planes[2].x) >= 37) {
-      if (parseInt(planes[2].x) < parseInt(planes[0].x)) {
-        setAlert("Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION")
-      } else {
-        if (38 < parseInt(planes[2].x) && parseInt(planes[2].x) < 40) {
-          setAlert("Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION")
+      // SAI
+      // planes[0].x && planes[0].y && setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
+      if (planes[2].x >= 37) {
+        if (planes[2].y < planes[0].y) {
+          setAlert(
+            'Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION'
+          )
         } else {
-          setAlert('Máy bay A: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
+          if (planes[2].x > 43) {
+            setAlert(
+              'Máy bay A: INCURSION INCURSION INCURSION Máy bay C: MAKING INCURSION MAKING INCURSION MAKING INCURSION HOLD POSITION HOLD POSITION'
+            )
+          } else {
+            setAlert('Máy bay A: CONFLICT CONFLICT CONFLICT Máy bay C: CONFLICT CONFLICT CONFLICT')
+          }
         }
+      } else {
+        setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
       }
-    } else {
-      setAlert('Máy bay B: RUNWAY OCCUPIED! Máy bay C: RUNWAY OCCUPIED!')
     }
   }
 
+  // Kiểm tra liên tục nếu nhập giá trị cho A, B, C
   useEffect(() => {
     checkAirPlane()
   }, [planes])
+
   return (
     <div className=' bg-gray-100 p-8'>
-      <Popconfirm
-        open={open}
-        title="CONFIRM TAKEOFF ABORTED ?"
-        description="Are you sure to confirm?"
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        icon={<BsQuestionCircle style={{ color: 'red', marginTop: 3, marginRight: 2 }} />}
-      >
-      </Popconfirm>
       <div className='max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6'>
         <h1 className='text-3xl font-bold text-center mb-8 text-gray-800'>Airport Runway Control</h1>
         <AnimatePresence>
@@ -246,7 +246,9 @@ const AirportRunway: React.FC = () => {
                         }}
                         className='absolute'
                       >
-                        <span style={{color: 'white', transform: 'rotate(-90deg)', display: 'inline-block'}}>{plane.id}</span>
+                        <span style={{ color: 'white', transform: 'rotate(-90deg)', display: 'inline-block' }}>
+                          {plane.id}
+                        </span>
                         <FaPlane className='text-white text-2xl' aria-label={`Airplane ${plane.id}`} />
                       </motion.div>
                     )

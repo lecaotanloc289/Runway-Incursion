@@ -10,19 +10,19 @@ Runway
 Taxiway
   E1: 
   start:
-    x: 30 - 40
+    x: 30 - 36
     y: 10 - 17
   
 
   E2: 
   start:
-    x: 30 - 40
+    x: 30 - 36
     y: 28 - 34
   
 
   E3: 
   start:
-    x: 30 - 40
+    x: 30 - 36
     y: 59 - 66
   
 
